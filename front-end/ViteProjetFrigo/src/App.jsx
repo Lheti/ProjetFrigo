@@ -1,10 +1,11 @@
 import './App.css'
+import { Frigo } from './composants/Frigo'
 
 function App() {
   return (
     <>
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <h1 className="text-4xl font-bold text-blue-500">Frigo & Recettes de App.jsx</h1>
+        <Frigo />
       </div>
     </>
   )
