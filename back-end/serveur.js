@@ -1,50 +1,31 @@
-//Permet d'importer et faire tourner un serveur Express
+const express = require('express');
+const mysql = require('mysql');
+const app = express();
+const port = 3000;
 
-const express = require('express')
-const app = express()
-const port = 3000
+// Middleware pour interpréter le JSON
+app.use(express.json());
 
-app.get('/', (req, res) => {
-  res.send('Hello World!')
-})
-
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
-
-
-// Permet d'importer et de connecter la base de donnée de MySQL
-
-const mysql = require('mysql')
+// Création de la connexion à la base de données
 const connection = mysql.createConnection({
   host: 'localhost',
   user: 'root',
   password: 'descodeuses',
   database: 'frigo_recettes'
-})
+});
 
 connection.connect((err) => {
-  if(err) {
-
-    console.log("Erreur de connexion au serveur Express.");
-
+  if (err) {
+    console.log("Erreur de connexion à la base de données.");
   } else {
+    console.log("Connexion à la base de données réussie.");
+  }
+});
 
-  console.log("Connection au serveur Express réussie.");
-}
-})
-
-connection.end()
-
-
-//Différents endpoints de la page :
-
-// Endpoint : GET /produits
-// But : Récupérer tous les produits du frigo
-// Requête SQL : Sélectionne tous les champs (*) de la table 'produits'
+// Endpoint GET /produits - Récupérer tous les produits du frigo
 app.get("/produits", (req, res) => {
   const sql = "SELECT * FROM produits";
-  db.query(sql, (err, result) => {
+  connection.query(sql, (err, result) => {
     if (err) {
       console.error("Erreur lors de la récupération des produits:", err);
       res.status(500).send("Erreur lors de la récupération des produits");
@@ -54,12 +35,10 @@ app.get("/produits", (req, res) => {
   });
 });
 
-// Endpoint : GET /recettes
-// But : Récupérer toutes les recettes
-// Requête SQL : Sélectionne tous les champs (*) de la table 'recettes'
+// Endpoint GET /recettes - Récupérer toutes les recettes
 app.get("/recettes", (req, res) => {
   const sql = "SELECT * FROM recettes";
-  db.query(sql, (err, result) => {
+  connection.query(sql, (err, result) => {
     if (err) {
       console.error("Erreur lors de la récupération des recettes:", err);
       res.status(500).send("Erreur lors de la récupération des recettes");
@@ -69,14 +48,11 @@ app.get("/recettes", (req, res) => {
   });
 });
 
-// Endpoint : POST /produits
-// But : Ajouter un nouveau produit dans le frigo
-// Requête SQL : Insère un nouveau produit dans la table 'produits'
+// Endpoint POST /produits - Ajouter un nouveau produit dans le frigo
 app.post("/produits", (req, res) => {
   const { nom, quantite, date_expiration, categorie } = req.body;
-  const sql =
-    "INSERT INTO produits (nom, quantite, date_expiration, categorie) VALUES (?, ?, ?, ?)";
-  db.query(sql, [nom, quantite, date_expiration, categorie], (err, result) => {
+  const sql = "INSERT INTO produits (nom, quantite, date_expiration, categorie) VALUES (?, ?, ?, ?)";
+  connection.query(sql, [nom, quantite, date_expiration, categorie], (err, result) => {
     if (err) {
       console.error("Erreur lors de l'ajout du produit:", err);
       res.status(500).send("Erreur lors de l'ajout du produit");
@@ -89,43 +65,10 @@ app.post("/produits", (req, res) => {
   });
 });
 
-// Endpoint : POST /recettes
-// But : Ajouter une nouvelle recette
-// Requête SQL : Insère une nouvelle recette dans la table 'recettes'
-app.post("/recettes", (req, res) => {
-  const { nom, ingredients, instructions, difficulte, temps_preparation } =
-    req.body;
-
-  // Log des données envoyées pour vérifier ce qui est reçu
-  console.log("Données reçues pour la recette :", req.body);
-
-  const sql =
-    "INSERT INTO recettes (nom, ingredients, instructions, difficulte, temps_preparation) VALUES (?, ?, ?, ?, ?)";
-  db.query(
-    sql,
-    [nom, ingredients, instructions, difficulte, temps_preparation],
-    (err, result) => {
-      if (err) {
-        // Log plus détaillé sur l'erreur SQL
-        console.error("Erreur lors de l'ajout de la recette :", err);
-        res.status(500).send("Erreur lors de l'ajout de la recette");
-      } else {
-        res.json({
-          message: "Recette ajoutée avec succès",
-          recetteId: result.insertId,
-        });
-      }
-    }
-  );
-});
-
-
-// Endpoint : DELETE /produits/vider
-// But : Vider complètement le frigo (supprimer tous les produits)
-// Requête SQL : Supprime tous les enregistrements de la table 'produits'
+// Endpoint DELETE /produits/vider - Vider complètement le frigo
 app.delete('/produits/vider', (req, res) => {
   const sql = 'DELETE FROM produits';
-  db.query(sql, (err, result) => {
+  connection.query(sql, (err, result) => {
     if (err) {
       console.error('Erreur lors de la suppression des produits:', err);
       res.status(500).send('Erreur lors de la suppression des produits');
@@ -294,4 +237,9 @@ app.post('/ingredients/bulk', (req, res) => {
       res.json({ message: 'Ingrédients ajoutés avec succès', affectedRows: result.affectedRows });
     }
   });
+});
+
+// Lancement du serveur
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`);
 });
