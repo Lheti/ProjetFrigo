@@ -5,7 +5,7 @@ import { RecettesDisponibles } from './RecettesDisponibles'
 
 export const Frigo = () => {
   return (
-    <div>Mon Frigo :
+    <div><strong>Mon Frigo :</strong>
       <Recettes />
       <Produits />
       <RecettesDisponibles />
